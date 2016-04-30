@@ -7,6 +7,12 @@ shadowsocks
 
 A fast tunnel proxy that helps you bypass firewalls.
 
+
+This manyuser branch forked from breakwa11/shadowsocks supports shadowsocks-panel.
+
+
+
+
 Server
 ------
 
