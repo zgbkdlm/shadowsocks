@@ -50,7 +50,7 @@ class DbTransfer(object):
 				dt_transfer[id] = [int(curr_transfer[id][0] * Config.MYSQL_TRANSFER_MUL),
 									int(curr_transfer[id][1] * Config.MYSQL_TRANSFER_MUL)]
 
-		query_head = 'UPDATE user'
+		query_head = 'UPDATE member'
 		query_sub_when = ''
 		query_sub_when2 = ''
 		query_sub_in = None
@@ -58,17 +58,17 @@ class DbTransfer(object):
 		for id in dt_transfer.keys():
 			if dt_transfer[id][0] == 0 and dt_transfer[id][1] == 0:
 				continue
-			query_sub_when += ' WHEN %s THEN u+%s' % (id, dt_transfer[id][0])
-			query_sub_when2 += ' WHEN %s THEN d+%s' % (id, dt_transfer[id][1])
+			query_sub_when += ' WHEN %s THEN flow_up+%s' % (id, dt_transfer[id][0])
+			query_sub_when2 += ' WHEN %s THEN flow_down+%s' % (id, dt_transfer[id][1])
 			if query_sub_in is not None:
 				query_sub_in += ',%s' % id
 			else:
 				query_sub_in = '%s' % id
 		if query_sub_when == '':
 			return
-		query_sql = query_head + ' SET u = CASE port' + query_sub_when + \
-					' END, d = CASE port' + query_sub_when2 + \
-					' END, t = ' + str(int(last_time)) + \
+		query_sql = query_head + ' SET flow_up = CASE port' + query_sub_when + \
+					' END, flow_down = CASE port' + query_sub_when2 + \
+					' END, lastConnTime = ' + str(int(last_time)) + \
 					' WHERE port IN (%s)' % query_sub_in
 		#print query_sql
 		conn = cymysql.connect(host=Config.MYSQL_HOST, port=Config.MYSQL_PORT, user=Config.MYSQL_USER,
@@ -88,7 +88,7 @@ class DbTransfer(object):
 			reload(switchrule)
 			keys = switchrule.getKeys()
 		except Exception as e:
-			keys = ['port', 'u', 'd', 'transfer_enable', 'passwd', 'enable' ]
+			keys = ['port', 'flow_up', 'flow_down', 'transfer', 'sspwd', 'enable' ]
 		reload(cymysql)
 		conn = cymysql.connect(host=Config.MYSQL_HOST, port=Config.MYSQL_PORT, user=Config.MYSQL_USER,
 								passwd=Config.MYSQL_PASS, db=Config.MYSQL_DB, charset='utf8')
@@ -117,12 +117,12 @@ class DbTransfer(object):
 		cur_servers = {}
 		for row in rows:
 			try:
-				allow = switchrule.isTurnOn(row) and row['enable'] == 1 and row['u'] + row['d'] < row['transfer_enable']
+				allow = switchrule.isTurnOn(row) and row['enable'] == 1 and row['folw_up'] + row['flow_down'] < row['transfer']
 			except Exception as e:
 				allow = False
 
 			port = row['port']
-			passwd = common.to_bytes(row['passwd'])
+			passwd = common.to_bytes(row['sspwd'])
 
 			if port not in cur_servers:
 				cur_servers[port] = passwd
