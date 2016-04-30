@@ -7,6 +7,9 @@ MYSQL_DB = 'shadowsocks'
 MYSQL_TRANSFER_MUL = 1.0
 MYSQL_UPDATE_TIME = 15
 
+# Pro node 1 true , others false
+PRO_NODE = 0
+
 MANAGE_PASS = 'ss233333333'
 #if you want manage in other server you should set this value to global ip
 MANAGE_BIND_IP = '127.0.0.1'
